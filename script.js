@@ -1,34 +1,9 @@
-Array.prototype.unique = function() {
-  return this.
-    reduce(function(pre, curr) {
-      if (pre.indexOf(curr) === -1) {
-        pre.push(curr);
-      }
-      return pre;
-    }, []);
-};
-
-Array.prototype.difference = function(secondArray) {
-  return this.filter(function(i) {
-    return secondArray.indexOf(i) < 0;
-  });
-};
-
-Array.prototype.remove = function(number) {
-  var index = this.indexOf(number);
-  if (index > -1 ) {
-    this.splice(this.indexOf(number), 1);
-  }
-  return this;
-}
-
 var ttt = {
 
   settings: {
     userSign: 'x',
     compSign: 'o',
-    availableMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    viableWins: [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]]
+    firstTurn: 'user',
   },
 
   elements: {
@@ -41,13 +16,18 @@ var ttt = {
   init: function init() {
     s = this.settings;
     el = this.elements;
-    this.compViable = s.viableWins.slice();
-    this.userViable = s.viableWins.slice();
+    this.availableMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    this.viableWins = [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]]
+    this.compViable = this.viableWins.slice();
+    this.userViable = this.viableWins.slice();
     this.userMoves = [];
     this.compMoves = [];
     this.clearBoard();
-    this.usersTurn();
-    //ttt.compPlay();
+    if (s.firstTurn === 'user') {
+      this.usersTurn();
+    } else {
+      this.compPlay();
+    }
   },
   usersTurn: function() {
     var move,
@@ -67,30 +47,6 @@ var ttt = {
     });
   },
 
-  isViable: function(move) {
-    return (s.availableMoves.indexOf(move) > -1);
-  },
-
-  rmMove: function(move) {
-    console.log('Removing', move);
-    s.availableMoves.remove(move);
-  },
-
-  rmCompWin: function(move) {
-    this.compViable = this.compViable.filter(function(win, index) {
-      if (win.indexOf(move) === -1) {
-        return win;
-      }
-    });
-  },
-
-  rmUserWin: function(move) {
-    this.userViable = this.userViable.filter(function(win, index) {
-      if (win.indexOf(move) === -1) {
-        return win;
-      }
-    });
-  },
 
   compsTurn: function() {
     var self = this,
@@ -114,6 +70,7 @@ var ttt = {
         if (winCheck.length > 1) {
           winningMove = win.difference(winCheck)[0];
           move = winningMove;
+          alert('Comp won');
         }
       });
     }
@@ -165,9 +122,29 @@ var ttt = {
     self.rmUserWin(move);
     self.usersTurn();
   },
+  endGame: function() {
+  },
+  isViable: function(move) {
+    return (this.availableMoves.indexOf(move) > -1);
+  },
+  rmMove: function(move) {
+    this.availableMoves.remove(move);
+  },
+  rmCompWin: function(move) {
+    this.compViable = this.compViable.filter(function(win, index) {
+      if (win.indexOf(move) === -1) {
+        return win;
+      }
+    });
+  },
+  rmUserWin: function(move) {
+    this.userViable = this.userViable.filter(function(win, index) {
+      if (win.indexOf(move) === -1) {
+        return win;
+      }
+    });
+  },
   compMark: function(val) {
-    console.log('Marked', val);
-    var eq = val - 1;
     $('.game-board td[data-id=' + val + ']').text('O');
   },
   clearBoard: function clear() {
