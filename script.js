@@ -8,11 +8,10 @@ var ttt = {
 
   elements: {
     td: $('td'),
-    flash: $('.flash')
+    flash: $('.flash'),
+    reset: $('.reset')
   },
 
-  bindUIActions: function() {
-  },
 
   init: function init() {
     s = this.settings;
@@ -23,12 +22,19 @@ var ttt = {
     this.userViable = this.viableWins.slice();
     this.userMoves = [];
     this.compMoves = [];
+    this.bindUIActions();
     this.clearBoard();
     if (s.firstTurn === 'user') {
       this.usersTurn();
     } else {
       this.compsTurn();
     }
+  },
+  bindUIActions: function() {
+    var self = this;
+    el.reset.on('click', function(e) {
+      self.init();
+    });
   },
   usersTurn: function() {
     var move,
@@ -55,11 +61,13 @@ var ttt = {
   compsTurn: function() {
     var self = this,
     move = false;
-
-    if ( self.compViable.length < 1) {
+    if ( self.compViable.length < 1 && self.userViable.length < 1) {
       self.flash('Cats game', 'alert-warning');
       return;
+    } else {
+      self.usersTurn();
     }
+
 
     if ( !move ) {
       // Check for winning Move
@@ -98,6 +106,7 @@ var ttt = {
 
     if ( !move ) {
       // Check for best move
+      if (self.compViable.length > 1) {
       var winNumbers = self.compViable.reduce(function(a, b) {
         return a.concat(b);
       }),
@@ -118,13 +127,17 @@ var ttt = {
         }
       }
       move = bestMove;
+      } else {
+        move = self.availableMoves[0];
+        self.flash('Cats game', 'alert-warning');
+        self.endGame();
+      }
     }
 
     self.compMark(move);
     self.compMoves.push(move);
     self.rmMove(move);
     self.rmUserWin(move);
-    self.usersTurn();
   },
   checkUserWin: function() {
     var self = this,
