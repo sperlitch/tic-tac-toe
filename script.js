@@ -1,11 +1,11 @@
 Array.prototype.unique = function() {
   return this.
-  reduce(function(pre, curr) {
-    if (pre.indexOf(curr) === -1) {
-      pre.push(curr);
-    }
-    return pre;
-  }, []);
+    reduce(function(pre, curr) {
+      if (pre.indexOf(curr) === -1) {
+        pre.push(curr);
+      }
+      return pre;
+    }, []);
 };
 
 Array.prototype.difference = function(secondArray) {
@@ -14,170 +14,164 @@ Array.prototype.difference = function(secondArray) {
   });
 };
 
+Array.prototype.remove = function(number) {
+  var index = this.indexOf(number);
+  if (index > -1 ) {
+    this.splice(this.indexOf(number), 1);
+  }
+  return this;
+}
+
 var ttt = {
-  player: 'X',
-  computer: 'O',
+
+  settings: {
+    userSign: 'x',
+    compSign: 'o',
+    availableMoves: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    viableWins: [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]]
+  },
+
+  elements: {
+    td: $('td')
+  },
+
+  bindUIActions: function() {
+  },
 
   init: function init() {
-    ttt.availableMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    ttt.possibleWins = [
-      [1, 4, 7],
-      [1, 2, 3],
-      [1, 5, 9],
-      [2, 5, 8],
-      [3, 6, 9],
-      [3, 5, 7],
-      [4, 5, 6],
-      [7, 8, 9]
-    ];
-    ttt.compPossibleWins = ttt.possibleWins.slice();
-    ttt.playerPossibleWins = ttt.possibleWins.slice();
-    ttt.playerMoves = [];
-    ttt.compMoves = [];
-    ttt.clearBoard();
-    ttt.playerTurn();
+    s = this.settings;
+    el = this.elements;
+    this.compViable = s.viableWins.slice();
+    this.userViable = s.viableWins.slice();
+    this.userMoves = [];
+    this.compMoves = [];
+    this.clearBoard();
+    this.usersTurn();
     //ttt.compPlay();
-    //ttt.playerTurn();
   },
-  compPlay: function compPlay() {
-    var haveMoved = false;
+  usersTurn: function() {
+    var move,
+    moveId,
+    self = this;
+    el.td.on('click', function() {
+      move = $(this);
+      moveID = move.data('id');
+      if (self.isViable(moveID) ) {
+        move.text(s.userSign);
+        self.userMoves.push(moveID);
+        self.rmMove(moveID);
+        self.rmCompWin(moveID, self.compViable);
+        el.td.off('click');
+        self.compsTurn();
+      }
+    });
+  },
 
-    if (!haveMoved) {
-      console.log('win');
-      ttt.compPossibleWins.forEach(function(winningArray) {
-        if (!haveMoved) {
-          var matches = 0,
-            holdingArray = [];
-          winningArray.forEach(function(numberInWinningArray) {
-            if (ttt.compMoves.indexOf(numberInWinningArray) > -1) {
-              matches += 1;
-              holdingArray.push(numberInWinningArray);
-            }
-          });
-          if (matches > 1) {
-            var win = winningArray.difference(holdingArray)[0];
-            // ttt.playerPossibleWins = ttt.playerPossibleWins.filter(function(array) {
-            //   if (array.indexOf(block) === -1) {
-            //     return array;
-            //   }
-            // });
-            // Remove move from board
-            //ttt.removePlay(block);
-            ttt.compMark(win);
-            alert('Comp won');
-            //ttt.compMoves.push(block);
-            haveMoved = true;
-            return;
-          }
-        }
-      });
+  isViable: function(move) {
+    return (s.availableMoves.indexOf(move) > -1);
+  },
+
+  rmMove: function(move) {
+    console.log('Removing', move);
+    s.availableMoves.remove(move);
+  },
+
+  rmCompWin: function(move) {
+    this.compViable = this.compViable.filter(function(win, index) {
+      if (win.indexOf(move) === -1) {
+        return win;
+      }
+    });
+  },
+
+  rmUserWin: function(move) {
+    this.userViable = this.userViable.filter(function(win, index) {
+      if (win.indexOf(move) === -1) {
+        return win;
+      }
+    });
+  },
+
+  compsTurn: function() {
+    var self = this,
+    move = false;
+
+    if ( self.compViable.length < 1 ) {
+      alert('Cats game');
+      return;
     }
 
-    if (!haveMoved) {
-      console.log('block');
-      // Block
-      ttt.playerPossibleWins.forEach(function(winningArray) {
-        var matches = 0,
-          holdingArray = [];
-        winningArray.forEach(function(numberInWinningArray) {
-          if (ttt.playerMoves.indexOf(numberInWinningArray) > -1) {
-            matches += 1;
-            holdingArray.push(numberInWinningArray);
+    if ( !move ) {
+      // Check for winning Move
+      self.compViable.forEach(function(win) {
+        var winCheck = [],
+        winningMove = false;
+        win.forEach(function(number) {
+          if (self.compMoves.indexOf(number) > -1) {
+            winCheck.push(number);
           }
         });
-        if (matches > 1) {
-          var block = winningArray.difference(holdingArray)[0];
-          ttt.playerPossibleWins = ttt.playerPossibleWins.filter(function(array) {
-            if (array.indexOf(block) === -1) {
-              return array;
-            }
-          });
-          // Remove move from board
-          ttt.removePlay(block);
-          ttt.compMark(block);
-          ttt.compMoves.push(block);
-          haveMoved = true;
-          return;
+        if (winCheck.length > 1) {
+          winningMove = win.difference(winCheck)[0];
+          move = winningMove;
         }
-
       });
     }
-    if (!haveMoved) {
-      console.log('best move');
-      // The best move is the number with the most
-      // occurences in the winning possibilities?
-      var flat = ttt.compPossibleWins.reduce(function(a, b) {
-        return a.concat(b);
+
+    if ( !move ) {
+      // Check for block
+      self.userViable.forEach(function(win) {
+        var winCheck = [],
+        blockingMove = false;
+        win.forEach(function(number) {
+          if (self.userMoves.indexOf(number) > -1) {
+            winCheck.push(number);
+          }
+        });
+        if (winCheck.length > 1) {
+          blockingMove = win.difference(winCheck)[0];
+          move = blockingMove;
+        }
       });
-      var i = 0,
-        bestMove,
+    }
+
+    if ( !move ) {
+      // Check for best move
+      var winNumbers = self.compViable.reduce(function(a, b) {
+        return a.concat(b);
+      }),
+      i = 0,
+        bestMove = false,
         occurences,
-        mostOccurences = 0,
-        unique = flat.unique();
+          mostOccurences = 0,
+          unique = winNumbers.unique();
 
-      for (; i < unique.length; i++) {
-        occurences = flat.filter(function(x) {
-          return x === unique[i];
+      // Count number of uniques
+      for (; i < unique.length; i++ ) {
+        occurences = winNumbers.filter(function(n) {
+          return n === unique[i];
         }).length;
-
-        if (occurences > mostOccurences && ttt.compMoves.indexOf(unique[i]) === -1) {
+        if (occurences > mostOccurences && self.compMoves.indexOf(unique[i]) === -1) {
           mostOccurences = occurences;
           bestMove = unique[i];
         }
       }
-      ttt.compMoves.push(bestMove);
-      //console.log(bestMove);
-      // Remove possible wins from player
-      ttt.playerPossibleWins = ttt.playerPossibleWins.filter(function(array) {
-        if (array.indexOf(bestMove) === -1) {
-          return array;
-        }
-      });
-      // Remove move from board
-      ttt.removePlay(bestMove);
-      // Make Move
-      ttt.compMark(bestMove);
+      move = bestMove;
     }
-    console.log('comp is done');
-    ttt.playerTurn();
-  },
-  removePlay: function(val) {
-    ttt.availableMoves.splice(ttt.availableMoves.indexOf(val), 1);
+
+    self.compMark(move);
+    self.compMoves.push(move);
+    self.rmMove(move);
+    self.rmUserWin(move);
+    self.usersTurn();
   },
   compMark: function(val) {
-    console.log('Marked');
+    console.log('Marked', val);
     var eq = val - 1;
     $('.game-board td[data-id=' + val + ']').text('O');
   },
   clearBoard: function clear() {
     $('td').text('');
-  },
-  playerTurn: function playerTurn() {
-    //console.log(ttt.availableMoves);
-    $('td').on('click', function() {
-      //alert('ok');
-      var move = ($(this).data("id"));
-      console.log('------------------players moves--------------', move);
-      if (ttt.availableMoves.indexOf(move) > -1) {
-        $(this).text(ttt.player);
-        $('td').off('click');
-        ttt.playerMoves.push(move);
-        ttt.availableMoves.splice(ttt.availableMoves.indexOf(move), 1);
-
-        // Remove possible wins from computer
-        ttt.compPossibleWins = ttt.compPossibleWins.filter(function(array) {
-          if (array.indexOf(move) === -1) {
-            return array;
-          }
-        });
-        ttt.compPlay();
-        // if (ttt.availableMoves.length < 1) {
-        //   ttt.gameOver();
-        // }
-        //   ttt.compPlay();
-        // }
-      };
-    });
   }
 }
 ttt.init();
