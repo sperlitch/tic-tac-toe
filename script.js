@@ -2,20 +2,23 @@ var ttt = {
 
   settings: {
     userSign: 'x',
-    compSign: 'o',
+    compSign: 'O',
     firstTurn: 'user',
   },
 
   elements: {
     td: $('td'),
     flash: $('.flash'),
-    reset: $('.reset')
+    reset: $('.reset'),
+    exs: $('.exs'),
+    ohs: $('.ohs')
   },
 
 
   init: function init() {
     s = this.settings;
     el = this.elements;
+    el.flash.hide();
     this.availableMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     this.viableWins = [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]];
     this.compViable = this.viableWins.slice();
@@ -33,6 +36,16 @@ var ttt = {
   bindUIActions: function() {
     var self = this;
     el.reset.on('click', function(e) {
+      self.init();
+    });
+    el.exs.on('click', function(e) {
+      s.userSign = 'x';
+      s.compSign = 'O';
+      self.init();
+    });
+    el.ohs.on('click', function(e) {
+      s.userSign = 'O';
+      s.compSign = 'x';
       self.init();
     });
   },
@@ -179,13 +192,15 @@ var ttt = {
     });
   },
   compMark: function(val) {
-    $('.game-board td[data-id=' + val + ']').text('O');
+    $('.game-board td[data-id=' + val + ']').text(s.compSign);
   },
   clearBoard: function clear() {
     $('td').text('');
   }, 
   flash: function(text, style) {
-    el.flash.addClass(style);
+    el.flash.removeClass();
+    el.flash.show();
+    el.flash.addClass('flash alert ' + style);
     el.flash.text(text);
   }
 }
