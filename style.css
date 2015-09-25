@@ -28,3 +28,9 @@ td[class$="right"] {
 td[class$="left"] {
     border-left: none;
 }
+.flash {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  text-align: center;
+}

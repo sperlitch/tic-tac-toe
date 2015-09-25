@@ -7,7 +7,8 @@ var ttt = {
   },
 
   elements: {
-    td: $('td')
+    td: $('td'),
+    flash: $('.flash')
   },
 
   bindUIActions: function() {
@@ -16,8 +17,8 @@ var ttt = {
   init: function init() {
     s = this.settings;
     el = this.elements;
-    this.availableMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    this.viableWins = [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]]
+    this.availableMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    this.viableWins = [[1, 4, 7], [1, 2, 3], [1, 5, 9], [2, 5, 8], [3, 6, 9], [3, 5, 7], [4, 5, 6], [7, 8, 9]];
     this.compViable = this.viableWins.slice();
     this.userViable = this.viableWins.slice();
     this.userMoves = [];
@@ -26,7 +27,7 @@ var ttt = {
     if (s.firstTurn === 'user') {
       this.usersTurn();
     } else {
-      this.compPlay();
+      this.compsTurn();
     }
   },
   usersTurn: function() {
@@ -42,18 +43,21 @@ var ttt = {
         self.rmMove(moveID);
         self.rmCompWin(moveID, self.compViable);
         el.td.off('click');
-        self.compsTurn();
+        if (self.checkUserWin() === true) {
+          self.flash('User wins!', 'alert-success');
+        } else {
+          self.compsTurn();
+        }
       }
     });
   },
-
 
   compsTurn: function() {
     var self = this,
     move = false;
 
-    if ( self.compViable.length < 1 ) {
-      alert('Cats game');
+    if ( self.compViable.length < 1) {
+      self.flash('Cats game', 'alert-warning');
       return;
     }
 
@@ -70,7 +74,7 @@ var ttt = {
         if (winCheck.length > 1) {
           winningMove = win.difference(winCheck)[0];
           move = winningMove;
-          alert('Comp won');
+          self.flash('You didn\'t win', 'alert-danger');
         }
       });
     }
@@ -103,7 +107,7 @@ var ttt = {
           mostOccurences = 0,
           unique = winNumbers.unique();
 
-      // Count number of uniques
+      // Best move is the number that occurs most in winning arrays
       for (; i < unique.length; i++ ) {
         occurences = winNumbers.filter(function(n) {
           return n === unique[i];
@@ -121,6 +125,23 @@ var ttt = {
     self.rmMove(move);
     self.rmUserWin(move);
     self.usersTurn();
+  },
+  checkUserWin: function() {
+    var self = this,
+        winCheck = [];
+    self.userViable.forEach(function(win) {
+      winCheck = [];
+      console.log(win);
+      win.forEach(function(number) {
+        console.log(self.userMoves);
+        if (self.userMoves.indexOf(number) > -1) {
+          winCheck.push(number);
+        }
+      });
+    });
+    if (winCheck.length > 2) {
+      return true;
+    }
   },
   endGame: function() {
   },
@@ -149,6 +170,10 @@ var ttt = {
   },
   clearBoard: function clear() {
     $('td').text('');
+  }, 
+  flash: function(text, style) {
+    el.flash.addClass(style);
+    el.flash.text(text);
   }
 }
 ttt.init();
