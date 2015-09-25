@@ -11,7 +11,9 @@ var ttt = {
     flash: $('.flash'),
     reset: $('.reset'),
     exs: $('.exs'),
-    ohs: $('.ohs')
+    ohs: $('.ohs'),
+    first: $('.first'),
+    second: $('.second')
   },
 
 
@@ -119,7 +121,7 @@ var ttt = {
 
     if ( !move ) {
       // Check for best move
-      if (self.compViable.length > 1) {
+      if (self.compViable.length > 0) {
       var winNumbers = self.compViable.reduce(function(a, b) {
         return a.concat(b);
       }),
@@ -143,7 +145,6 @@ var ttt = {
       } else {
         move = self.availableMoves[0];
         self.flash('Cats game', 'alert-warning');
-        self.endGame();
       }
     }
 
@@ -168,8 +169,6 @@ var ttt = {
     if (winCheck.length > 2) {
       return true;
     }
-  },
-  endGame: function() {
   },
   isViable: function(move) {
     return (this.availableMoves.indexOf(move) > -1);
