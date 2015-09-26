@@ -98,6 +98,7 @@ var ttt = {
           winningMove = win.difference(winCheck)[0];
           move = winningMove;
           self.flash('You didn\'t win', 'alert-danger');
+          el.td.off('click');
         }
       });
     }
